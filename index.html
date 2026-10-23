@@ -248,11 +248,20 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
 /* タイトル：右に縦書きの巨大な題字、左に小さな情報。背景では雷が落ち続ける */
 .title{position:absolute;inset:0;z-index:12;display:grid;grid-template-columns:1fr auto;gap:16px;padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,var(--void) 0,rgba(5,6,13,.25) 26%,rgba(5,6,13,.2) 70%,var(--void) 100%);cursor:pointer;-webkit-tap-highlight-color:transparent;--glow:0}
 .tname{writing-mode:vertical-rl;margin:0;align-self:center;font-family:var(--display);font-weight:400;font-size:min(31vw,170px);line-height:1;letter-spacing:.04em;color:var(--act);text-shadow:0 0 calc(10px + var(--glow)*50px) rgba(200,220,255,calc(.35 + var(--glow)*.6)),0 0 2px #fff}
-.tside{display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.tside{display:grid;grid-template-rows:1fr auto;min-width:0}.tside>div:first-child{align-self:start}
 .tsub{font-family:var(--mono);font-size:11px;letter-spacing:.45em;color:var(--meter)}
 .ttag{margin:10px 0 0;font-size:15px;line-height:1.6;color:var(--ink)}
 .tbest{margin:6px 0 0;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
-.tres{display:flex;flex-direction:column;gap:10px;width:min(15em,70vw)}
+.tres{display:flex;flex-direction:column;gap:10px;width:100%;max-width:15em;align-self:end;margin-bottom:var(--tb,0px)}
+.trec{min-height:40px;font-size:14px;opacity:.85}
+.tosm{min-height:40px;font-size:13px;color:var(--dim)}
+#ovRec{z-index:13}
+.recg{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:34em}
+.recc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.recc span{font-size:12px;color:var(--dim)}
+.recc b{font-family:var(--display);font-weight:400;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
+.recc.w{grid-column:1/3}
+.recc.w b{font-size:28px;color:var(--act)}
 .tres .btn{flex:none;min-height:52px;font-size:16px}
 .tres .btn small{display:block;font-size:11px;opacity:.75;margin-top:2px}
 .tstart{font-family:var(--display);font-size:17px;color:var(--ink);letter-spacing:.06em;animation:blink 1.6s ease-in-out infinite}
@@ -345,8 +354,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
   <div class="title pad" id="ttl" role="button" tabindex="0" aria-label="タップして始める">
     <div class="tside">
       <div><div class="tsub">RAIDENSHO</div><p class="ttag">雷を落とす点を、選べ。</p><p class="tbest" id="tbest"></p></div>
-      <div class="tstart">タップで開始<small>音が出ます</small></div>
-      <div class="tres" id="tres" hidden><button class="btn pri" id="resumeBtn">続きから</button><button class="btn" id="newBtn">はじめから</button></div>
+      <div class="tres" id="tres"><button class="btn pri" id="resumeBtn" hidden>続きから</button><button class="btn" id="newBtn">はじめから</button><button class="btn trec" id="recBtn">記録</button></div>
     </div>
     <h1 class="tname">雷電所</h1>
   </div>
@@ -413,7 +421,13 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
       <p class="sub">画面の揺れ：雷が落ちた時の揺れと強い光（オフにすると光も弱まる）</p>
     </div>
     <p class="sub">設定はこの端末に残る</p>
-    <div><button class="btn pri" id="cfClose" style="min-width:10em">閉じる</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn pri" id="cfClose" style="min-width:10em">閉じる</button><button class="btn" id="cfTitle">タイトルに戻る<small>続きから再開できる</small></button></div>
+  </div>
+  <div class="ov pad" id="ovRec" hidden>
+    <h2>記録</h2>
+    <div class="recg" id="recG"></div>
+    <p class="sub">この端末での記録。最高の1発・最大連鎖・最大個数・回数は、この更新から数えはじめる</p>
+    <div><button class="btn pri" id="recClose" style="min-width:10em">閉じる</button></div>
   </div>
   <div class="ov pad" id="ovEnd" hidden>
     <h1 id="endH">停電</h1>
@@ -424,7 +438,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
     <div class="hist" id="hist"></div>
         <div class="chips" id="endChips"></div>
     <p class="skinfo" id="endInfo"></p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" id="endless" hidden style="min-width:12em">エンドレスで続ける</button><button class="btn pri" id="again" style="min-width:10em">もう一度</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" id="endless" hidden style="min-width:12em">エンドレスで続ける</button><button class="btn pri" id="again" style="min-width:10em">もう一度</button><button class="btn tosm" id="endTitle">タイトルへ</button></div>
   </div>
 </div>
 
@@ -652,7 +666,7 @@ function sTap(c,v){if(!AC||!sound)return;v=v==null?1:v;const r=(1+Math.min(c,40)
 const BGM={loading:false,buf:{},cur:null,want:null,vol:.32,out:null,pos:{}};
 const BGM_LOOP={barn:[85.730,193.394]};
 const BGM_RESUME={barn:1};
-const BGM_FILES={barn:'bgm/barn.mp3',temple:'bgm/temple.wav',goo:'bgm/goo.wav',patag:'bgm/patag.wav'};
+const BGM_FILES={barn:'bgm/barn.mp3',tempo:'bgm/tempo.wav',temple:'bgm/temple.wav',goo:'bgm/goo.wav',patag:'bgm/patag.wav'};
 /* 曲ごとの音量の補正（Gooは音が大きいので絞る） */
 const BGM_GAIN={goo:.6};
 /* スキル選び：New Barnの盛り上がり 2:20.686→2:29.657（4小節）、制覇：導入 0:29.653→0:38.625（4小節）をループ。どちらもふだんと同じファイルを使う */
@@ -665,7 +679,7 @@ function bgmPos(c){const lp=BGM_LOOP[c.k];let p=AC.currentTime-c.t0+c.off;if(lp&
 function bgmStop(fade){const c=BGM.cur;if(!c)return;BGM.cur=null;if(BGM_RESUME[c.k])BGM.pos[c.k]=bgmPos(c);const t=AC.currentTime;try{c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+fade);c.s.stop(t+fade+.05)}catch(e){}}
 function bgmStart(k){if(!AC||!BGM.out||!bgmBuf(k))return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=bgmBuf(k);s.loop=true;const lp=BGM_LOOP[k];if(lp){s.loopStart=lp[0];s.loopEnd=Math.min(lp[1],s.buffer.duration)}const off=BGM_RESUME[k]?(BGM.pos[k]||0):BGM_SRC[k]&&lp?lp[0]:0;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol*(BGM_GAIN[k]||1),t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t,off);BGM.cur={k,s,g:gn,t0:t,off}}
 function bgmUpdate(){if(!AC)return;/* 停電（負け）が始まった瞬間に、その時流れている曲をフェードアウト（ボス戦でも同じ） */
-  const k=!(CF.bgm>0)?null:(mode==='title'||mode==='down'?null:mode==='pick'?'pick':mode==='end'?(endWin?'goo':'patag'):bossNow()?'temple':'barn');
+  const k=!(CF.bgm>0)?null:!$('ovRec').hidden?'tempo':(mode==='title'||mode==='down'?null:mode==='pick'?'pick':mode==='end'?(endWin?'goo':'patag'):bossNow()?'temple':'barn');
   if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(mode==='down'?1.5:.5);return}if(BGM.cur&&BGM.cur.k===k)return;if(bgmBuf(k))bgmStart(k)}
 document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
@@ -775,7 +789,7 @@ $('putCancel').onclick=()=>{tick();putAt=null;mode='aim';ui()};
 $('putOk').onclick=()=>{if(mode!=='put'||!putAt||!valid(putAt.x,putAt.y)||wTok<=0)return;const a=putAt;putAt=null;
   pts.push({id:nextId++,nx:a.x/W,ny:a.y/H,t:'w',ph:Math.random()*6.28,hit:1.4,rc:0,die:phase+CFG.life});wTok--;mode='aim';
   impactNow(a.x,a.y,225,.7);stop(2);camKick(a.x,a.y,7);sTap(9,.8);sRainbow();tick();for(const k of KEYS)burst(a.x,a.y,10,4,HUE[k]);ring(a.x,a.y,3,225,3);ui();saveRun('aim')};
-function startGame(){BGM.pos={};wPend=0;contrib={};recent=[];trophies=[];setInsTrophy(null);bossPre=false;endless=false;wTok=1;carry=0;skipped=false;tutLoad();GS.storm=GS.gen=GS.mem=GS.sub=GS.keep=0;boss=null;bossUsed=[];hist=[];moves=0;pts=[];skills.clear();phase=0;grand=0;nextId=1;B.length=S.length=RG.length=EV.length=0;startPhase()}
+function startGame(){stUp(s=>{s.plays++});BGM.pos={};wPend=0;contrib={};recent=[];trophies=[];setInsTrophy(null);bossPre=false;endless=false;wTok=1;carry=0;skipped=false;tutLoad();GS.storm=GS.gen=GS.mem=GS.sub=GS.keep=0;boss=null;bossUsed=[];hist=[];moves=0;pts=[];skills.clear();phase=0;grand=0;nextId=1;B.length=S.length=RG.length=EV.length=0;startPhase()}
 function startPhase(){
   /* ボスを倒して次のステージへ：虹点+1 */
   if(phase>0&&phase%3===0){const g=addW(1);if(g)setTimeout(()=>banner('虹点 +1<small>好きな場所に置ける</small>','soft',1200),2100)}
@@ -930,7 +944,7 @@ function mile(prev,now,x,y,force){
     for(let i=0;i<lv*2;i++){const px=W*(.1+Math.random()*.8);addBolt(px,-10,px+(Math.random()-.5)*120,H*(.5+Math.random()*.5),22,4,h)}
     sBoom(lv===2?.8:1);sCrack(1.2);if(lv===3)setTimeout(()=>sBoom(.7),160);vib(lv===2?6:10)}
 }
-function bank(tot,hops,maxD,ax,ay){const n=hops.length;
+function bank(tot,hops,maxD,ax,ay){const n=hops.length;stUp(s=>{s.maxShot=Math.max(s.maxShot,tot);s.maxChain=Math.max(s.maxChain,maxD);s.maxCount=Math.max(s.maxCount,n)});
   clearTimeout(tallyT);tallyT=setTimeout(()=>{$('tally').hidden=true},1800);
   if(has('gather')&&n)at(simT+250,()=>{const gp=CFG.gap*W*.8;for(const h of hops){const p=h.p;if(!pts.includes(p))continue;const [x,y]=P(p);
       for(const k of [.3,.2,.1]){const nx=x+(ax-x)*k,ny=y+(ay-y)*k;if(pts.every(o=>o===p||Math.hypot(o.nx*W-nx,o.ny*H-ny)>=gp)){addBolt(x,y,nx,ny,6,.8,HUE[p.t]);p.nx=nx/W;p.ny=ny/H;break}}}
@@ -1111,7 +1125,7 @@ function pick(n,forced){
   renderOwn(null);
   $('ovPick').hidden=false;
 }
-function end(win){endWin=!!win;
+function end(win){endWin=!!win;if(win&&!endless)stUp(s=>{s.clears++});
   /* 制覇した時は結果画面のまま保存しておく。閉じても「続きから」でここに戻り、エンドレスへ進める */
   if(win&&!endless)saveRun('won');else clearRun();bannerEl.hidden=true;bannerT=0;
   const reach=`${Math.floor(phase/3)+1}-${phase%3===2?'ボス':phase%3+1}`;
@@ -1331,8 +1345,8 @@ function frameBody(now){
 const ttl=$('ttl');let tGlow=0,tGone=false;
 try{const b=+localStorage.getItem('raidensho_best')||0;if(b)$('tbest').textContent=`自己ベスト ${fmt(b)} kW`}catch(e){}
 function titleIdle(){
-  if(Math.random()<.035){const tx=W*(.15+Math.random()*.7),ty=H*(.15+Math.random()*.7);addBolt(tx+(Math.random()-.5)*80,-10,tx,ty,14,1.5+Math.random()*2.5,Math.random()<.3?50:205);burst(tx,ty,14,4,205);fl(.05,210);if(Math.random()<.5)tGlow=Math.max(tGlow,.6);if(AC)sCrack(.25)}
-  if(Math.random()<.008){const x=W*.82,y=H*(.3+Math.random()*.4);addBolt(x,-10,x,y,20,4,50);tGlow=1;fl(.12,50);shk(4);if(AC)sCrack(.6)}
+  if(Math.random()<.035){const tx=W*(.15+Math.random()*.7),ty=H*(.15+Math.random()*.7);addBolt(tx+(Math.random()-.5)*80,-10,tx,ty,14,1.5+Math.random()*2.5,Math.random()<.3?50:205);burst(tx,ty,14,4,205);fl(.05,210);if(Math.random()<.5)tGlow=Math.max(tGlow,.6)}
+  if(Math.random()<.008){const x=W*.82,y=H*(.3+Math.random()*.4);addBolt(x,-10,x,y,20,4,50);tGlow=1;fl(.12,50);shk(4)}
   tGlow*=.9;ttl.style.setProperty('--glow',tGlow.toFixed(3))
 }
 /* ===== 途中保存：狙う画面に戻るたび・スキル選択に入るたびに保存。閉じても続きから ===== */
@@ -1357,15 +1371,34 @@ function startFromTitle(resume){if(tGone)return;tGone=true;ac();
   sTap(10);sCrack(1.2);sBoom(.55);vib(4);tGlow=1;
   if(ttl.animate)ttl.animate([{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(1.06)'}],{duration:520,easing:'ease-out',fill:'forwards'});
   setTimeout(()=>{ttl.hidden=true;const d=resume?readRun():null;if(d)loadRun(d);else{clearRun();startGame()}},560)}
-ttl.addEventListener('pointerdown',e=>{if(e.target&&e.target.closest&&e.target.closest('button'))return;e.preventDefault();if(!readRun())startFromTitle(false)});
-{const d=readRun();if(d){$('tres').hidden=false;ttl.querySelector('.tstart').hidden=true;$('resumeBtn').innerHTML=`続きから<small>${resumeLabel(d)}</small>`}}
+ttl.addEventListener('pointerdown',e=>{if(e.target&&e.target.closest&&e.target.closest('button'))return;e.preventDefault()});
+function titleBtns(){const d=readRun();$('resumeBtn').hidden=!d;if(d)$('resumeBtn').innerHTML=`続きから<small>${resumeLabel(d)}</small>`;$('newBtn').className=d?'btn':'btn pri'}
+titleBtns();
+// ボタンの下端を「所」の下端にそろえる
+function tAlign(){const a=document.querySelector('.tside'),b=document.querySelector('.tname');if(!a||!b||!b.offsetHeight)return;ttl.style.setProperty('--tb',Math.max(0,(a.offsetTop+a.offsetHeight)-(b.offsetTop+b.offsetHeight)).toFixed(1)+'px')}
+tAlign();addEventListener('resize',tAlign);if(document.fonts)document.fonts.ready.then(tAlign);
 $('resumeBtn').onclick=e=>{e.stopPropagation();startFromTitle(true)};
 $('newBtn').onclick=e=>{e.stopPropagation();startFromTitle(false)};
-ttl.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!readRun())startFromTitle(false)});
+
 /* iPhoneでの意図しない拡大（ピンチ・ダブルタップ）と長押しメニューを止める */
 for(const ev of ['gesturestart','gesturechange','gestureend','dblclick','contextmenu'])document.addEventListener(ev,e=>e.preventDefault(),{passive:false});
 {let lastTE=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-lastTE<300&&!(e.target&&e.target.closest&&e.target.closest('button')))e.preventDefault();lastTE=n},{passive:false})}
 sound=CF.se>0;
+/* ===== 記録 ===== */
+function stGet(){const d={plays:0,clears:0,maxShot:0,maxChain:0,maxCount:0};try{Object.assign(d,JSON.parse(localStorage.getItem('raidensho_stats')||'{}'))}catch(e){}return d}
+function stUp(f){const s=stGet();f(s);try{localStorage.setItem('raidensho_stats',JSON.stringify(s))}catch(e){}}
+function recShow(){const s=stGet();let best=0,eb='';try{best=+localStorage.getItem('raidensho_best')||0;eb=localStorage.getItem('raidensho_endless')||''}catch(e){}
+  const c=(t,v,w)=>`<div class="recc${w?' w':''}"><span>${t}</span><b>${v}</b></div>`;
+  $('recG').innerHTML=c('自己ベスト（制覇した時の総発電）',best?fmt(best)+' kW':'まだない',1)+c('エンドレス最高到達',eb?'ステージ '+eb.split(':')[1]:'まだない',1)+c('最高の1発',s.maxShot?fmt(s.maxShot)+' kW':'—')+c('最大連鎖',s.maxChain||'—')+c('最大個数',s.maxCount||'—')+c('制覇 / 遊んだ回数',`${s.clears} / ${s.plays}`)}
+$('recBtn').onclick=e=>{e.stopPropagation();ac();tick();recShow();$('ovRec').hidden=false;bgmUpdate()};
+$('recClose').onclick=()=>{tick();$('ovRec').hidden=true;bgmUpdate()};
+/* ===== タイトルに戻る：遊んでいる途中の状態は保存済みなので「続きから」で戻れる ===== */
+function toTitle(){for(const id of ['ovCfg','ovEnd','ovPick','ovTitle','ovRec','coach'])$(id).hidden=true;EV.length=0;calmFx();target=null;aim=null;mode='title';fast=false;ui();
+  if(ttl.getAnimations)ttl.getAnimations().forEach(a=>a.cancel());ttl.style.opacity='';ttl.hidden=false;tGone=false;
+  titleBtns();tAlign();
+  try{const b=+localStorage.getItem('raidensho_best')||0;$('tbest').textContent=b?`自己ベスト ${fmt(b)} kW`:''}catch(e){}}
+$('cfTitle').onclick=()=>{tick();toTitle()};
+$('endTitle').onclick=()=>{tick();toTitle()};
 rs();ui();msgEl.textContent='';requestAnimationFrame(frame);
 </script>
 </body>
