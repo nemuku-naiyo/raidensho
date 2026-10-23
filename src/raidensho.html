@@ -241,6 +241,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
 .tsub{font-family:var(--mono);font-size:11px;letter-spacing:.45em;color:var(--meter)}
 .ttag{margin:10px 0 0;font-size:15px;line-height:1.6;color:var(--ink)}
 .tbest{margin:6px 0 0;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.tcred{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0;text-align:center;font-size:11px;letter-spacing:.12em;color:var(--dim);opacity:.7;pointer-events:none}
 .tres{display:flex;flex-direction:column;gap:10px;width:100%;max-width:15em;align-self:end;margin-bottom:var(--tb,0px)}
 .trec{min-height:40px;font-size:14px;opacity:.85}
 .tosm{min-height:40px;font-size:13px;color:var(--dim)}
@@ -344,6 +345,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
       <div class="tres" id="tres"><button class="btn pri" id="resumeBtn" hidden>続きから</button><button class="btn" id="newBtn">はじめから</button><button class="btn trec" id="recBtn">記録</button></div>
     </div>
     <h1 class="tname">雷電所</h1>
+    <p class="tcred">YMD（うーちーのあそびば）</p>
   </div>
 
   <div class="ov pad" id="ovTitle" hidden>
