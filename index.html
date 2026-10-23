@@ -649,15 +649,18 @@ function sTap(c,v){if(!AC||!sound)return;v=v==null?1:v;const r=(1+Math.min(c,40)
   noise('highpass',6000,.7,.9*v,.0005,.018,r);
   const t=AC.currentTime,o=AC.createOscillator(),gg=AC.createGain();o.type='sine';o.frequency.setValueAtTime(260*r,t);o.frequency.exponentialRampToValueAtTime(48,t+.09);gg.gain.setValueAtTime(1.1*v,t);gg.gain.exponentialRampToValueAtTime(.0001,t+.14);o.connect(gg);gg.connect(MG);o.start(t);o.stop(t+.16);
   noise('bandpass',1400*r,1.5,.55*v,.001,.09)}
-/* ===== BGM：ふだんのフェーズ＝Peek、ボス戦＝Sebolydi、スキル選び・制覇＝TEMPO。つなぎ目なしでループ、場面の切り替えはフェード ===== */
-const BGM={loading:false,buf:{},cur:null,want:null,vol:.32,out:null};
-const BGM_FILES={peek:'bgm/peek.wav',tempo:'bgm/tempo.wav',sebolydi:'bgm/sebolydi.wav'};
+/* ===== BGM：ふだんのフェーズ＝New Barn（頭から流して、3:13.394→1:25.730でループ。フェーズをまたいでも続きから）、ボス戦＝Sebolydi、スキル選び・制覇＝TEMPO。つなぎ目なしでループ、場面の切り替えはフェード ===== */
+const BGM={loading:false,buf:{},cur:null,want:null,vol:.32,out:null,pos:{}};
+const BGM_LOOP={barn:[85.730,193.394]};
+const BGM_RESUME={barn:1};
+const BGM_FILES={barn:'bgm/barn.mp3',tempo:'bgm/tempo.wav',sebolydi:'bgm/sebolydi.wav'};
 let endWin=false;
 function bgmLoad(){BGM.loading=true;try{BGM.out=AC.createGain();BGM.out.gain.value=CF.bgm/100;BGM.out.connect(AC.destination)}catch(e){return}
   for(const [k,u] of Object.entries(BGM_FILES))fetch(u).then(r=>r.arrayBuffer()).then(a=>new Promise((ok,ng)=>AC.decodeAudioData(a,ok,ng))).then(b=>{BGM.buf[k]=b;if(BGM.want===k&&(!BGM.cur||BGM.cur.k!==k))bgmStart(k)}).catch(()=>{})}
-function bgmStop(fade){const c=BGM.cur;if(!c)return;BGM.cur=null;const t=AC.currentTime;try{c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+fade);c.s.stop(t+fade+.05)}catch(e){}}
-function bgmStart(k){if(!AC||!BGM.out||!BGM.buf[k])return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=BGM.buf[k];s.loop=true;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol,t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t);BGM.cur={k,s,g:gn}}
-function bgmUpdate(){if(!AC)return;const k=!(CF.bgm>0)?null:(mode==='title'?null:mode==='pick'?'tempo':mode==='end'?(endWin?'tempo':null):bossNow()?'sebolydi':'peek');
+function bgmPos(c){const lp=BGM_LOOP[c.k];let p=AC.currentTime-c.t0+c.off;if(lp&&p>lp[1])p=lp[0]+(p-lp[0])%(lp[1]-lp[0]);else if(!lp)p=p%c.s.buffer.duration;return p}
+function bgmStop(fade){const c=BGM.cur;if(!c)return;BGM.cur=null;if(BGM_RESUME[c.k])BGM.pos[c.k]=bgmPos(c);const t=AC.currentTime;try{c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+fade);c.s.stop(t+fade+.05)}catch(e){}}
+function bgmStart(k){if(!AC||!BGM.out||!BGM.buf[k])return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=BGM.buf[k];s.loop=true;const lp=BGM_LOOP[k];if(lp){s.loopStart=lp[0];s.loopEnd=Math.min(lp[1],s.buffer.duration)}const off=BGM_RESUME[k]?(BGM.pos[k]||0):0;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol,t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t,off);BGM.cur={k,s,g:gn,t0:t,off}}
+function bgmUpdate(){if(!AC)return;const k=!(CF.bgm>0)?null:(mode==='title'?null:mode==='pick'?'tempo':mode==='end'?(endWin?'tempo':null):bossNow()?'sebolydi':'barn');
   if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(.5);return}if(BGM.cur&&BGM.cur.k===k)return;if(BGM.buf[k])bgmStart(k)}
 document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
@@ -767,7 +770,7 @@ $('putCancel').onclick=()=>{tick();putAt=null;mode='aim';ui()};
 $('putOk').onclick=()=>{if(mode!=='put'||!putAt||!valid(putAt.x,putAt.y)||wTok<=0)return;const a=putAt;putAt=null;
   pts.push({id:nextId++,nx:a.x/W,ny:a.y/H,t:'w',ph:Math.random()*6.28,hit:1.4,rc:0,die:phase+CFG.life});wTok--;mode='aim';
   impactNow(a.x,a.y,225,.7);stop(2);camKick(a.x,a.y,7);sTap(9,.8);sRainbow();tick();for(const k of KEYS)burst(a.x,a.y,10,4,HUE[k]);ring(a.x,a.y,3,225,3);ui();saveRun('aim')};
-function startGame(){contrib={};recent=[];trophies=[];setInsTrophy(null);bossPre=false;endless=false;wTok=1;carry=0;skipped=false;tutLoad();GS.storm=GS.gen=GS.mem=GS.sub=GS.keep=0;boss=null;bossUsed=[];hist=[];moves=0;pts=[];skills.clear();phase=0;grand=0;nextId=1;B.length=S.length=RG.length=EV.length=0;startPhase()}
+function startGame(){BGM.pos={};contrib={};recent=[];trophies=[];setInsTrophy(null);bossPre=false;endless=false;wTok=1;carry=0;skipped=false;tutLoad();GS.storm=GS.gen=GS.mem=GS.sub=GS.keep=0;boss=null;bossUsed=[];hist=[];moves=0;pts=[];skills.clear();phase=0;grand=0;nextId=1;B.length=S.length=RG.length=EV.length=0;startPhase()}
 function startPhase(){
   /* ボスを倒して次のステージへ：虹点+1 */
   if(phase>0&&phase%3===0){const g=addW(1);if(g)setTimeout(()=>banner('虹点 +1<small>好きな場所に置ける</small>','soft',1200),2100)}

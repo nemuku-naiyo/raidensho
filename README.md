@@ -21,7 +21,7 @@
 | `src/raidensho.html` | ゲーム本体（正本）。claude.aiの作品としてもこのまま公開している |
 | `index.html` | GitHub Pages用。`tools/build.py` で `src/raidensho.html` から作る |
 | `icons/` | アイコン（1024 / 512 / 180） |
-| `bgm/` | BGM（peek＝ふだんのフェーズ、sebolydi＝ボス戦、tempo＝スキル選び・制覇）。つなぎ目なしでループさせるためWAVのまま |
+| `bgm/` | BGM。barn＝ふだんのフェーズ（頭から流し、3:13.394→1:25.730の48小節でループ。フェーズをまたいでも続きから）、sebolydi＝ボス戦、tempo＝スキル選び・制覇。短いループはつなぎ目が出ないようWAVのまま |
 | `manifest.webmanifest` | ホーム画面に追加したときの設定 |
 | `tools/` | 調整用のシミュレーションとテスト |
 
