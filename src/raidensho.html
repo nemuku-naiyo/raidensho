@@ -32,7 +32,7 @@
 }
 html,body{height:100%}
 body{background:var(--void);color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;word-break:keep-all;overflow-wrap:anywhere;line-break:strict}
-.app{position:fixed;top:0;bottom:0;left:8px;right:8px;display:flex;flex-direction:column}
+.app{position:fixed;top:0;bottom:0;left:8px;right:8px;display:flex;flex-direction:column;justify-content:center}
 .pad{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{padding-block:calc(10px + env(safe-area-inset-top,0px)) 8px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);background:var(--panel)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -62,7 +62,7 @@ header{padding-block:calc(10px + env(safe-area-inset-top,0px)) 8px;display:flex;
 .tally span{font-size:10px;color:var(--dim);letter-spacing:.06em}
 .tally i{font-style:normal;color:var(--dim);font-family:var(--display);font-size:14px;margin-inline:2px}
 #tc,#tm,#tf{color:var(--ink)}#tf{font-size:18px}#tt{color:var(--act);font-size:26px;text-shadow:0 0 12px rgba(200,220,255,.6)}
-.stage{position:relative;flex:1;min-height:0;background:var(--void)}
+.stage{position:relative;flex:1;min-height:0;max-height:calc((100vw - 16px) * .846 + 72px);background:var(--void)}
 canvas{position:absolute;left:0;top:0;display:block;touch-action:none;border-radius:6px;box-shadow:0 0 0 1px var(--line)}
 ruby{ruby-position:over}
 rt{font-family:var(--body);font-weight:800;font-size:.22em;letter-spacing:.28em;line-height:1.4;opacity:.85;text-shadow:none;padding-bottom:.15em}
@@ -590,7 +590,7 @@ function hopBolt(h,life,w,hu){for(const s of hopSegs(h))addBolt(s[0],s[1],s[2],s
 
 /* ===== 音（雷の卵から流用・簡略化） ===== */
 let AC=null,NB=null,MG=null,sound=true,voices=0,lastZap=0;
-function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();const _o=AC.createOscillator.bind(AC),_b=AC.createBufferSource.bind(AC);AC.createOscillator=()=>{const n=_o();voices++;n.addEventListener('ended',()=>voices--);return n};AC.createBufferSource=()=>{const n=_b();voices++;n.addEventListener('ended',()=>voices--);return n};const len=AC.sampleRate*2;NB=AC.createBuffer(1,len,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;const ws=AC.createWaveShaper(),cu=new Float32Array(256);for(let i=0;i<256;i++){cu[i]=Math.tanh((i/128-1)*1.3)}ws.curve=cu;const comp=AC.createDynamicsCompressor();MG=AC.createGain();MG.gain.value=1;MG.connect(ws);ws.connect(comp);const OUT=AC.createGain();OUT.gain.value=.7;comp.connect(OUT);OUT.connect(AC.destination)}catch(e){}}if(AC&&AC.state!=='running')AC.resume().catch(()=>{})}
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();const _o=AC.createOscillator.bind(AC),_b=AC.createBufferSource.bind(AC);AC.createOscillator=()=>{const n=_o();voices++;n.addEventListener('ended',()=>voices--);return n};AC.createBufferSource=()=>{const n=_b();voices++;n.addEventListener('ended',()=>voices--);return n};const len=AC.sampleRate*2;NB=AC.createBuffer(1,len,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;const ws=AC.createWaveShaper(),cu=new Float32Array(256);for(let i=0;i<256;i++){cu[i]=Math.tanh((i/128-1)*1.3)}ws.curve=cu;const comp=AC.createDynamicsCompressor();MG=AC.createGain();MG.gain.value=1;MG.connect(ws);ws.connect(comp);const OUT=AC.createGain();OUT.gain.value=.7;comp.connect(OUT);OUT.connect(AC.destination)}catch(e){}}if(AC&&AC.state!=='running')AC.resume().catch(()=>{});if(AC&&!BGM.loading)bgmLoad()}
 function noise(type,freq,q,vol,att,dec,rate){if(!AC||!sound||voices>34)return;const t=AC.currentTime,s=AC.createBufferSource();s.buffer=NB;s.playbackRate.value=rate||1;s.loop=true;const f=AC.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;const gg=AC.createGain();gg.gain.setValueAtTime(0,t);gg.gain.linearRampToValueAtTime(vol,t+att);gg.gain.exponentialRampToValueAtTime(.0001,t+att+dec);s.connect(f);f.connect(gg);gg.connect(MG);s.start(t,Math.random());s.stop(t+att+dec+.05)}
 function thump(fr,vol,dec){if(!AC||!sound||voices>38)return;const t=AC.currentTime,o=AC.createOscillator(),gg=AC.createGain();o.type='sine';o.frequency.setValueAtTime(fr,t);o.frequency.exponentialRampToValueAtTime(25,t+dec);gg.gain.setValueAtTime(vol,t);gg.gain.exponentialRampToValueAtTime(.0001,t+dec);o.connect(gg);gg.connect(MG);o.start(t);o.stop(t+dec+.05)}
 function tone(fr,vol,len,type){if(!AC||!sound||voices>38)return;const t=AC.currentTime,o=AC.createOscillator(),gg=AC.createGain();o.type=type||'triangle';o.frequency.value=fr;gg.gain.setValueAtTime(vol,t);gg.gain.exponentialRampToValueAtTime(.0001,t+len);o.connect(gg);gg.connect(MG);o.start(t);o.stop(t+len+.02)}
@@ -617,6 +617,17 @@ function sTap(c,v){if(!AC||!sound)return;v=v==null?1:v;const r=(1+Math.min(c,40)
   noise('highpass',6000,.7,.9*v,.0005,.018,r);
   const t=AC.currentTime,o=AC.createOscillator(),gg=AC.createGain();o.type='sine';o.frequency.setValueAtTime(260*r,t);o.frequency.exponentialRampToValueAtTime(48,t+.09);gg.gain.setValueAtTime(1.1*v,t);gg.gain.exponentialRampToValueAtTime(.0001,t+.14);o.connect(gg);gg.connect(MG);o.start(t);o.stop(t+.16);
   noise('bandpass',1400*r,1.5,.55*v,.001,.09)}
+/* ===== BGM：ふだんのフェーズ＝Peek、ボス戦＝Sebolydi、スキル選び・制覇＝TEMPO。つなぎ目なしでループ、場面の切り替えはフェード ===== */
+const BGM={loading:false,buf:{},cur:null,want:null,vol:.32,out:null};
+const BGM_FILES={peek:'bgm/peek.wav',tempo:'bgm/tempo.wav',sebolydi:'bgm/sebolydi.wav'};
+let endWin=false;
+function bgmLoad(){BGM.loading=true;try{BGM.out=AC.createGain();BGM.out.gain.value=1;BGM.out.connect(AC.destination)}catch(e){return}
+  for(const [k,u] of Object.entries(BGM_FILES))fetch(u).then(r=>r.arrayBuffer()).then(a=>new Promise((ok,ng)=>AC.decodeAudioData(a,ok,ng))).then(b=>{BGM.buf[k]=b;if(BGM.want===k&&(!BGM.cur||BGM.cur.k!==k))bgmStart(k)}).catch(()=>{})}
+function bgmStop(fade){const c=BGM.cur;if(!c)return;BGM.cur=null;const t=AC.currentTime;try{c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+fade);c.s.stop(t+fade+.05)}catch(e){}}
+function bgmStart(k){if(!AC||!BGM.out||!BGM.buf[k])return;bgmStop(.6);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=BGM.buf[k];s.loop=true;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol,t+.6);s.connect(gn);gn.connect(BGM.out);s.start(t);BGM.cur={k,s,g:gn}}
+function bgmUpdate(){if(!AC)return;const k=!sound?null:(mode==='title'?null:mode==='pick'?'tempo':mode==='end'?(endWin?'tempo':null):bossNow()?'sebolydi':'peek');
+  if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(1.2);return}if(BGM.cur&&BGM.cur.k===k)return;if(BGM.buf[k])bgmStart(k)}
+document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
 function tick(){try{HL.click()}catch(e){}}
 let lastTick=0;function tickT(){const n=performance.now();if(n-lastTick<55)return;lastTick=n;tick()}
@@ -665,7 +676,7 @@ function renderChips(el,info){
       if(info){info.innerHTML=html}else{msgEl.innerHTML=html;clearTimeout(infoT);infoT=setTimeout(()=>{b.classList.remove('on');ui()},2600)}};el.appendChild(b)}
 }
 function left(){return hand.u+hand.y+hand.m}
-function ui(){
+function ui(){bgmUpdate();
   $('phl').innerHTML=`${endless&&phase>=CFG.quota.length?'<span class="bt" style="color:var(--meter);margin:0 6px 0 0">∞</span>':''}ステージ<b>${Math.floor(phase/3)+1}</b> <span class="phs">フェーズ <b>${phase%3+1}</b>/3</span>${bossNow()?'<span class="bt">ボス</span>':''}`;$('qa').textContent=fmtS(Q(phase));
   /* ボスは予告中は名前だけ（タップで詳細）。ボス戦の時だけ全文を赤く */
   const bl=$('bossl');if(boss){bl.innerHTML=bossNow()?`<b>ボス戦</b><span>${BOSSES[boss.k].n}：${boss.text}</span>`:`<b>ボス予告</b><span>${BOSSES[boss.k].n}</span>`;bl.className='bossline'+(bossNow()?' now':' pre')}else bl.innerHTML='';
@@ -1053,7 +1064,7 @@ function pick(n,forced){
   renderOwn(null);
   $('ovPick').hidden=false;
 }
-function end(win){
+function end(win){endWin=!!win;
   /* 制覇した時は結果画面のまま保存しておく。閉じても「続きから」でここに戻り、エンドレスへ進める */
   if(win&&!endless)saveRun('won');else clearRun();bannerEl.hidden=true;bannerT=0;
   const reach=`${Math.floor(phase/3)+1}-${phase%3===2?'ボス':phase%3+1}`;
@@ -1081,7 +1092,7 @@ function renderDex(){const ord=['x','ch','cnt','spr','pt'],ks=Object.keys(SKILLS
     '<p class="dh">戦利品（そのボスを倒すともらえる。枠の外）</p>'+Object.keys(TROPHY).map(k=>`<div class="ownr"><b style="color:var(--gold)">${TROPHY[k].n}</b><span><em>${BOSSES[k].n}</em>　${TROPHY[k].d}</span></div>`).join('')}
 $('help').onclick=()=>{ac();tick();renderDex();$('ovTitle').hidden=false};
 $('calm').onchange=()=>{RM=$('calm').checked};
-$('snd').onclick=()=>{ac();sound=!sound;$('snd').textContent=sound?'音 オン':'音 オフ';tick()};
+$('snd').onclick=()=>{ac();sound=!sound;$('snd').textContent=sound?'音 オン':'音 オフ';tick();bgmUpdate()};
 
 /* ===== 入力：指より少し上に照準。離した位置で確定 ===== */
 function pos(e){const r=cv.getBoundingClientRect();const fx=(e.clientX-r.left)/SC,fy=(e.clientY-r.top)/SC;return{fx,fy,x:Math.max(0,Math.min(W,fx)),y:Math.max(0,Math.min(H,fy-CFG.aimOffset/SC))}}
@@ -1169,7 +1180,7 @@ function frameBody(now){
   if(bannerT&&now>bannerT){bannerT=0;if(bannerEl._fly){bannerEl._fly=false;flyToChip(bannerEl)}else bannerEl.hidden=true}
   // 発電メーター
   if(powerShow!==power){powerShow+=(power-powerShow)*.15;if(Math.abs(power-powerShow)<1)powerShow=power}
-  if(now-powT>50){powT=now;arrowTick();const q=Q(phase),pw=$('pw'),bar=$('pbar'),met=powerShow>=q,ng=mode==='down';pw.textContent=fmtS(powerShow);pw.className=met?'met':'';bar.style.width=Math.min(100,powerShow/q*100)+'%';bar.className=ng?'ng':met?'met':''}
+  if(now-powT>50){powT=now;arrowTick();bgmUpdate();const q=Q(phase),pw=$('pw'),bar=$('pbar'),met=powerShow>=q,ng=mode==='down';pw.textContent=fmtS(powerShow);pw.className=met?'met':'';bar.style.width=Math.min(100,powerShow/q*100)+'%';bar.className=ng?'ng':met?'met':''}
 
   g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='source-over';g.drawImage(BG,0,0);
   g.setTransform(DS,0,0,DS,0,0);

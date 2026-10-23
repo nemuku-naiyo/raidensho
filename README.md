@@ -21,6 +21,7 @@
 | `src/raidensho.html` | ゲーム本体（正本）。claude.aiの作品としてもこのまま公開している |
 | `index.html` | GitHub Pages用。`tools/build.py` で `src/raidensho.html` から作る |
 | `icons/` | アイコン（1024 / 512 / 180） |
+| `bgm/` | BGM（peek＝ふだんのフェーズ、sebolydi＝ボス戦、tempo＝スキル選び・制覇）。つなぎ目なしでループさせるためWAVのまま |
 | `manifest.webmanifest` | ホーム画面に追加したときの設定 |
 | `tools/` | 調整用のシミュレーションとテスト |
 
