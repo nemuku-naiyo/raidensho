@@ -188,7 +188,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
 .ov h2{font-size:28px;color:var(--ink)}
 .ov p{margin:0;font-size:14px;line-height:1.7;max-width:34em}
 .cfg{display:flex;flex-direction:column;gap:18px;max-width:34em}
-.crow{display:grid;grid-template-columns:4.5em 1fr 3em;align-items:center;gap:12px;font-size:15px}
+.crow{display:grid;grid-template-columns:5.5em 1fr 3em;align-items:center;gap:12px;font-size:15px}
 .crow b{font-family:var(--display);font-weight:400;text-align:right;color:var(--act)}
 .crow input[type=range]{width:100%;accent-color:var(--act);height:32px;touch-action:pan-x}
 .cseg{display:flex;gap:8px;grid-column:2/4}
@@ -409,7 +409,9 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
     <div class="cfg">
       <label class="crow"><span>BGM</span><input type="range" id="cfBgm" min="0" max="100" step="5"><b id="cfBgmV"></b></label>
       <label class="crow"><span>効果音</span><input type="range" id="cfSe" min="0" max="100" step="5"><b id="cfSeV"></b></label>
-      <div class="crow"><span>振動</span><div class="cseg"><button class="btn" id="cfVibOn">オン</button><button class="btn" id="cfVibOff">オフ</button></div></div>
+      <div class="crow"><span>本体の振動</span><div class="cseg"><button class="btn" id="cfVibOn">オン</button><button class="btn" id="cfVibOff">オフ</button></div></div>
+      <div class="crow"><span>画面の揺れ</span><div class="cseg"><button class="btn" id="cfShkOn">オン</button><button class="btn" id="cfShkOff">オフ</button></div></div>
+      <p class="sub">本体の振動：タップや連鎖の手応え。画面の揺れ：雷が落ちた時の揺れと強い光（オフにすると光も弱まる）</p>
     </div>
     <p class="sub">設定はこの端末に残る</p>
     <div><button class="btn pri" id="cfClose" style="min-width:10em">閉じる</button></div>
@@ -660,7 +662,7 @@ function bgmUpdate(){if(!AC)return;const k=!(CF.bgm>0)?null:(mode==='title'?null
 document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
 /* 設定：BGM・効果音の音量（0〜100）と振動。この端末に保存 */
-const CF=(()=>{const d={bgm:80,se:80,vib:1};try{Object.assign(d,JSON.parse(localStorage.getItem('raidensho_cfg')||'{}'))}catch(e){}return d})();
+const CF=(()=>{const d={bgm:80,se:80,vib:1,shake:1};try{Object.assign(d,JSON.parse(localStorage.getItem('raidensho_cfg')||'{}'))}catch(e){}return d})();
 const cfSave=()=>{try{localStorage.setItem('raidensho_cfg',JSON.stringify(CF))}catch(e){}};
 function cfApply(){sound=CF.se>0;if(OUTG)OUTG.gain.value=.7*CF.se/100;if(BGM.out)BGM.out.gain.value=CF.bgm/100;bgmUpdate()}
 function tick(){if(!CF.vib)return;try{HL.click()}catch(e){}}
@@ -670,7 +672,7 @@ function vib(n,gap){if(!CF.vib)return;try{if(navigator.vibrate){navigator.vibrat
 /* ===== 演出（上限つき） ===== */
 const B=[],S=[],RG=[],IM=[],cam={x:0,y:0,vx:0,vy:0};
 function stepCam(){cam.vx+=-cam.x*.35;cam.vy+=-cam.y*.35;cam.vx*=.62;cam.vy*=.62;cam.x+=cam.vx;cam.y+=cam.vy}
-function camKick(px,py,m){const dx=px-W/2,dy=py-H/2+40,l=Math.hypot(dx,dy)||1,s=RM?.2:1;cam.vx+=dx/l*m*s;cam.vy+=dy/l*m*s}
+function camKick(px,py,m){const dx=px-W/2,dy=py-H/2+40,l=Math.hypot(dx,dy)||1,s=!CF.shake?0:RM?.2:1;cam.vx+=dx/l*m*s;cam.vy+=dy/l*m*s}
 /* タップした瞬間に直接描く。ヒットストップ中もこの絵が止まって見える */
 function impactNow(px,py,hu,s){s=s||1;g.setTransform(DS,0,0,DS,0,0);g.globalCompositeOperation='lighter';g.fillStyle='#fff';g.beginPath();g.arc(px,py,40*s,0,6.283);g.fill();g.strokeStyle=`hsl(${hu},100%,65%)`;g.lineWidth=7*s;g.beginPath();g.arc(px,py,56*s,0,6.283);g.stroke();g.globalCompositeOperation='source-over';
   if(IM.length>=6)IM.shift();IM.push({x:px,y:py,f:0,a:Math.random()*6.283,h:hu,s})}
@@ -685,8 +687,8 @@ function addBolt(x1,y1,x2,y2,life,w,h){while(B.length>=MAXB){let mi=0,mv=9;for(l
 function burst(x,y,n,pow,h,grey){n=Math.min(n,MAXS-S.length);for(let i=0;i<n;i++){const a=Math.random()*6.283,v=Math.random()*pow;S.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:22+Math.random()*36,h:(h==null?200:h)+(Math.random()-.5)*50,gr:grey})}}
 function ring(x,y,v,h,w){if(RG.length>=MAXR)RG.shift();RG.push({x,y,r:6,v,l:1,h:h==null?200:h,w:w||6})}
 function stop(n){if(!RM)hitStop=Math.max(hitStop,n)}
-function shk(n){shake=Math.max(shake,RM?n*.2:n)}
-function fl(a,h){flash=Math.max(flash,RM?a*.3:a);flashHue=h==null?200:h}
+function shk(n){if(!CF.shake)return;shake=Math.max(shake,RM?n*.2:n)}
+function fl(a,h){flash=Math.max(flash,(RM||!CF.shake)?a*.3:a);flashHue=h==null?200:h}
 
 /* ===== UI ===== */
 const fmt=n=>Math.round(n).toLocaleString('ja-JP');
@@ -1127,11 +1129,13 @@ function renderDex(){const ord=['x','ch','cnt','spr','pt'],ks=Object.keys(SKILLS
 $('help').onclick=()=>{ac();tick();renderDex();$('ovTitle').hidden=false};
 $('calm').onchange=()=>{RM=$('calm').checked};
 $('snd').onclick=()=>{ac();tick();cfShow();$('ovCfg').hidden=false};
-function cfShow(){$('cfBgm').value=CF.bgm;$('cfSe').value=CF.se;$('cfBgmV').textContent=CF.bgm;$('cfSeV').textContent=CF.se;$('cfVibOn').classList.toggle('on',!!CF.vib);$('cfVibOff').classList.toggle('on',!CF.vib)}
+function cfShow(){$('cfBgm').value=CF.bgm;$('cfSe').value=CF.se;$('cfBgmV').textContent=CF.bgm;$('cfSeV').textContent=CF.se;$('cfVibOn').classList.toggle('on',!!CF.vib);$('cfVibOff').classList.toggle('on',!CF.vib);$('cfShkOn').classList.toggle('on',!!CF.shake);$('cfShkOff').classList.toggle('on',!CF.shake)}
 $('cfBgm').addEventListener('input',e=>{CF.bgm=+e.target.value;cfShow();cfApply();cfSave()});
 let cfSeT=0;$('cfSe').addEventListener('input',e=>{CF.se=+e.target.value;cfShow();cfApply();cfSave();const n=performance.now();if(n-cfSeT>120){cfSeT=n;sTap(4,.6)}});
 $('cfVibOn').onclick=()=>{CF.vib=1;cfSave();cfShow();tick()};
 $('cfVibOff').onclick=()=>{CF.vib=0;cfSave();cfShow()};
+$('cfShkOn').onclick=()=>{tick();CF.shake=1;cfSave();cfShow();shk(8)};
+$('cfShkOff').onclick=()=>{tick();CF.shake=0;shake=0;cfSave();cfShow()};
 $('cfClose').onclick=()=>{tick();$('ovCfg').hidden=true};
 
 /* ===== 入力：指より少し上に照準。離した位置で確定 ===== */
