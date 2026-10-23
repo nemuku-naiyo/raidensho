@@ -752,17 +752,17 @@ $('mv').onclick=()=>{if(mode!=='aim'||moves<=0)return;tick();mode='move';grab=nu
 /* このフェーズでの移動を新しい順に1つずつ戻す。回数も戻る */
 $('mundo').onclick=()=>{if(mode!=='aim'||!mvStack.length)return;tick();const m=mvStack.pop();moves++;const p=m.p;
   if(pts.includes(p)){const [x,y]=P(p);burst(x,y,8,2,HUE[p.t]);p.nx=m.nx;p.ny=m.ny;p.hit=1.2;ring(...P(p),2.5,HUE[p.t],2);sTap(2,.5)}ui()};
-let wTok=0;
+let wTok=0,wPend=0;  // wPend：あふれて、次のフェーズで盤面に落ちてくる虹点の数
 /* 虹点は3個まで。あふれた分は消える */
 const WCAP=3;
-function addW(n){const got=Math.max(0,Math.min(n,WCAP-wTok));wTok+=got;if(got<n)setTimeout(()=>banner(`虹点は${WCAP}個まで<small>${n-got}個あふれて消えた</small>`,'soft',1300),300);return got}
+function addW(n){const got=Math.max(0,Math.min(n,WCAP-wTok));wTok+=got;if(got<n){wPend+=n-got;setTimeout(()=>banner(`虹点は${WCAP}個まで<small>あふれた${n-got}個は、次のフェーズで盤面に落ちてくる</small>`,'soft',1500),300)}return got}
 const wGain=n=>{const g=Math.max(0,Math.min(n,WCAP-wTok));return g<n?`虹点+${g}（${WCAP}個まで）`:`虹点+${n}`};
 $('putb').onclick=()=>{if(mode!=='aim'||wTok<=0)return;tick();mode='put';putAt=null;putMemo=null;ui()};
 $('putCancel').onclick=()=>{tick();putAt=null;mode='aim';ui()};
 $('putOk').onclick=()=>{if(mode!=='put'||!putAt||!valid(putAt.x,putAt.y)||wTok<=0)return;const a=putAt;putAt=null;
   pts.push({id:nextId++,nx:a.x/W,ny:a.y/H,t:'w',ph:Math.random()*6.28,hit:1.4,rc:0,die:phase+CFG.life});wTok--;mode='aim';
   impactNow(a.x,a.y,225,.7);stop(2);camKick(a.x,a.y,7);sTap(9,.8);sRainbow();tick();for(const k of KEYS)burst(a.x,a.y,10,4,HUE[k]);ring(a.x,a.y,3,225,3);ui();saveRun('aim')};
-function startGame(){BGM.pos={};contrib={};recent=[];trophies=[];setInsTrophy(null);bossPre=false;endless=false;wTok=1;carry=0;skipped=false;tutLoad();GS.storm=GS.gen=GS.mem=GS.sub=GS.keep=0;boss=null;bossUsed=[];hist=[];moves=0;pts=[];skills.clear();phase=0;grand=0;nextId=1;B.length=S.length=RG.length=EV.length=0;startPhase()}
+function startGame(){BGM.pos={};wPend=0;contrib={};recent=[];trophies=[];setInsTrophy(null);bossPre=false;endless=false;wTok=1;carry=0;skipped=false;tutLoad();GS.storm=GS.gen=GS.mem=GS.sub=GS.keep=0;boss=null;bossUsed=[];hist=[];moves=0;pts=[];skills.clear();phase=0;grand=0;nextId=1;B.length=S.length=RG.length=EV.length=0;startPhase()}
 function startPhase(){
   /* ボスを倒して次のステージへ：虹点+1 */
   if(phase>0&&phase%3===0){const g=addW(1);if(g)setTimeout(()=>banner('虹点 +1<small>好きな場所に置ける</small>','soft',1200),2100)}
@@ -778,6 +778,9 @@ function startPhase(){
   const list=[];for(const k of KEYS)for(let i=0;i<h[k]+r;i++)list.push(k);if(has('cond'))list.push('w');
   for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]]}
   const m=12,gp=CFG.gap*W,spots=[];
+  /* あふれた虹点：すでにある点のどれかの近く（広がる円の中）に落とす */
+  for(;wPend>0;wPend--){const base=pts.filter(p=>!blocked(p));for(let tr=0;tr<300;tr++){let x,y;if(base.length){const b=base[Math.floor(Math.random()*base.length)],[bx,by]=P(b),a=Math.random()*6.283,r=gp*1.05+Math.random()*(range()*.9-gp*1.05);x=bx+Math.cos(a)*r;y=by+Math.sin(a)*r}else{x=m+Math.random()*(W-2*m);y=m+Math.random()*(H-2*m)}
+    if(x<m||y<m||x>W-m||y>H-m)continue;if([...pts.map(P),...spots.map(q=>[q.x,q.y])].every(([px,py])=>Math.hypot(px-x,py-y)>=gp)){spots.push({x,y,k:'w'});break}}}
   for(const k of list){for(let tr=0;tr<400;tr++){const x=m+Math.random()*(W-2*m),y=m+Math.random()*(H-2*m);if([...pts.map(P),...spots.map(q=>[q.x,q.y])].every(([px,py])=>Math.hypot(px-x,py-y)>=gp)){spots.push({x,y,k});break}}}
   const t0=simT+250;
   spots.forEach((q,i)=>at(t0+i*55,()=>{pts.push({id:nextId++,nx:q.x/W,ny:q.y/H,t:q.k,ph:Math.random()*6.28,hit:1.4,die:phase+CFG.life+(has('life')?1:0)});ring(q.x,q.y,2.5,HUE[q.k],2);burst(q.x,q.y,6,2.5,HUE[q.k]);tone(380*Math.pow(2,i/16),.13,.06,'sine');noise('highpass',6000,.7,.25,.0005,.02);tickT()}));
@@ -1322,12 +1325,12 @@ function titleIdle(){
 /* ===== 途中保存：狙う画面に戻るたび・スキル選択に入るたびに保存。閉じても続きから ===== */
 const SAVE='raidensho_run';
 function saveRun(at,extra){try{localStorage.setItem(SAVE,JSON.stringify(Object.assign({v:1,at,phase,nextId,pts:pts.map(p=>{const o={};for(const k in p)if(k!=='ph'&&k!=='hit')o[k]=p[k];return o}),
-  skills:[...skills],GS:{...GS},moves,wTok,strikes,strikesMax,power,grand,hist,boss,bossUsed,endless,phN,phD,clrAt,carry,trophies,bossPre,contrib,recent,insC},extra||{})))}catch(e){}}
+  skills:[...skills],GS:{...GS},moves,wTok,strikes,strikesMax,power,grand,hist,boss,bossUsed,endless,phN,phD,clrAt,carry,trophies,bossPre,contrib,recent,insC,wPend},extra||{})))}catch(e){}}
 function clearRun(){try{localStorage.removeItem(SAVE)}catch(e){}}
 function readRun(){try{const d=JSON.parse(localStorage.getItem(SAVE)||'null');return d&&d.v===1?d:null}catch(e){return null}}
 function loadRun(d){tutLoad();TUT=false;tutSpot=null;
   phase=d.phase;nextId=d.nextId;pts=d.pts.map(p=>Object.assign({ph:Math.random()*6.28,hit:1.2},p));skills.clear();d.skills.forEach(k=>SKILLS[k]&&skills.add(k));Object.assign(GS,d.GS);
-  moves=d.moves;wTok=Math.min(3,d.wTok||0);strikes=d.strikes;strikesMax=d.strikesMax;power=powerShow=d.power;grand=d.grand;hist=d.hist||[];boss=d.boss;bossUsed=d.bossUsed||[];endless=!!d.endless;phN=d.phN||0;phD=d.phD||0;clrAt=+d.clrAt||0;carry=+d.carry||0;trophies=(d.trophies||[]).filter(k=>TROPHY[k]);setInsTrophy(d.insC||(trophies.includes('insul')?'u':null));bossPre=!!d.bossPre;contrib=d.contrib||{};recent=d.recent||[];
+  moves=d.moves;wTok=Math.min(3,d.wTok||0);strikes=d.strikes;strikesMax=d.strikesMax;power=powerShow=d.power;grand=d.grand;hist=d.hist||[];boss=d.boss;bossUsed=d.bossUsed||[];endless=!!d.endless;phN=d.phN||0;phD=d.phD||0;clrAt=+d.clrAt||0;carry=+d.carry||0;trophies=(d.trophies||[]).filter(k=>TROPHY[k]);setInsTrophy(d.insC||(trophies.includes('insul')?'u':null));wPend=+d.wPend||0;bossPre=!!d.bossPre;contrib=d.contrib||{};recent=d.recent||[];
   mvStack=[];grab=null;pend=null;target=null;aim=null;fast=false;dark=darkTo=0;placed=[];B.length=S.length=RG.length=EV.length=0;setTally(0,0,0);
   mode='aim';ui();for(const p of pts){const [x,y]=P(p);ring(x,y,2,HUE[p.t],2)}
   if(d.at==='won'){end(true)}
