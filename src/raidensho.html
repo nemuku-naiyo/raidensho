@@ -639,15 +639,18 @@ function sTap(c,v){if(!AC||!sound)return;v=v==null?1:v;const r=(1+Math.min(c,40)
 const BGM={loading:false,buf:{},cur:null,want:null,vol:.32,out:null,pos:{}};
 const BGM_LOOP={barn:[85.730,193.394]};
 const BGM_RESUME={barn:1};
-const BGM_FILES={barn:'bgm/barn.mp3',tempo:'bgm/tempo.wav',sebolydi:'bgm/sebolydi.wav'};
+const BGM_FILES={barn:'bgm/barn.mp3',sebolydi:'bgm/sebolydi.wav'};
+/* スキル選び・制覇：New Barnの導入 0:29.653→0:38.625（4小節）をループ。ふだんと同じファイルを使う */
+BGM_LOOP.pick=[29.653,38.625];
+const BGM_SRC={pick:'barn'};const bgmBuf=k=>BGM.buf[BGM_SRC[k]||k];
 let endWin=false;
 function bgmLoad(){BGM.loading=true;try{BGM.out=AC.createGain();BGM.out.gain.value=CF.bgm/100;BGM.out.connect(AC.destination)}catch(e){return}
-  for(const [k,u] of Object.entries(BGM_FILES))fetch(u).then(r=>r.arrayBuffer()).then(a=>new Promise((ok,ng)=>AC.decodeAudioData(a,ok,ng))).then(b=>{BGM.buf[k]=b;if(BGM.want===k&&(!BGM.cur||BGM.cur.k!==k))bgmStart(k)}).catch(()=>{})}
+  for(const [k,u] of Object.entries(BGM_FILES))fetch(u).then(r=>r.arrayBuffer()).then(a=>new Promise((ok,ng)=>AC.decodeAudioData(a,ok,ng))).then(b=>{BGM.buf[k]=b;const w=BGM.want;if(w&&(BGM_SRC[w]||w)===k&&(!BGM.cur||BGM.cur.k!==w))bgmStart(w)}).catch(()=>{})}
 function bgmPos(c){const lp=BGM_LOOP[c.k];let p=AC.currentTime-c.t0+c.off;if(lp&&p>lp[1])p=lp[0]+(p-lp[0])%(lp[1]-lp[0]);else if(!lp)p=p%c.s.buffer.duration;return p}
 function bgmStop(fade){const c=BGM.cur;if(!c)return;BGM.cur=null;if(BGM_RESUME[c.k])BGM.pos[c.k]=bgmPos(c);const t=AC.currentTime;try{c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+fade);c.s.stop(t+fade+.05)}catch(e){}}
-function bgmStart(k){if(!AC||!BGM.out||!BGM.buf[k])return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=BGM.buf[k];s.loop=true;const lp=BGM_LOOP[k];if(lp){s.loopStart=lp[0];s.loopEnd=Math.min(lp[1],s.buffer.duration)}const off=BGM_RESUME[k]?(BGM.pos[k]||0):0;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol,t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t,off);BGM.cur={k,s,g:gn,t0:t,off}}
-function bgmUpdate(){if(!AC)return;const k=!(CF.bgm>0)?null:(mode==='title'?null:mode==='pick'?'tempo':mode==='end'?(endWin?'tempo':null):bossNow()?'sebolydi':'barn');
-  if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(.5);return}if(BGM.cur&&BGM.cur.k===k)return;if(BGM.buf[k])bgmStart(k)}
+function bgmStart(k){if(!AC||!BGM.out||!bgmBuf(k))return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=bgmBuf(k);s.loop=true;const lp=BGM_LOOP[k];if(lp){s.loopStart=lp[0];s.loopEnd=Math.min(lp[1],s.buffer.duration)}const off=BGM_RESUME[k]?(BGM.pos[k]||0):BGM_SRC[k]&&lp?lp[0]:0;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol,t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t,off);BGM.cur={k,s,g:gn,t0:t,off}}
+function bgmUpdate(){if(!AC)return;const k=!(CF.bgm>0)?null:(mode==='title'?null:mode==='pick'?'pick':mode==='end'?(endWin?'pick':null):bossNow()?'sebolydi':'barn');
+  if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(.5);return}if(BGM.cur&&BGM.cur.k===k)return;if(bgmBuf(k))bgmStart(k)}
 document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
 /* 設定：BGM・効果音の音量（0〜100）と振動。この端末に保存 */
