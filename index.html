@@ -409,9 +409,8 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
     <div class="cfg">
       <label class="crow"><span>BGM</span><input type="range" id="cfBgm" min="0" max="100" step="5"><b id="cfBgmV"></b></label>
       <label class="crow"><span>効果音</span><input type="range" id="cfSe" min="0" max="100" step="5"><b id="cfSeV"></b></label>
-      <div class="crow"><span>本体の振動</span><div class="cseg"><button class="btn" id="cfVibOn">オン</button><button class="btn" id="cfVibOff">オフ</button></div></div>
       <div class="crow"><span>画面の揺れ</span><div class="cseg"><button class="btn" id="cfShkOn">オン</button><button class="btn" id="cfShkOff">オフ</button></div></div>
-      <p class="sub">本体の振動：タップや連鎖の手応え。画面の揺れ：雷が落ちた時の揺れと強い光（オフにすると光も弱まる）</p>
+      <p class="sub">画面の揺れ：雷が落ちた時の揺れと強い光（オフにすると光も弱まる）</p>
     </div>
     <p class="sub">設定はこの端末に残る</p>
     <div><button class="btn pri" id="cfClose" style="min-width:10em">閉じる</button></div>
@@ -665,7 +664,7 @@ function bgmUpdate(){if(!AC)return;const k=!(CF.bgm>0)?null:(mode==='title'?null
 document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
 /* 設定：BGM・効果音の音量（0〜100）と振動。この端末に保存 */
-const CF=(()=>{const d={bgm:80,se:80,vib:1,shake:1};try{Object.assign(d,JSON.parse(localStorage.getItem('raidensho_cfg')||'{}'))}catch(e){}return d})();
+const CF=(()=>{const d={bgm:80,se:80,vib:1,shake:1};try{Object.assign(d,JSON.parse(localStorage.getItem('raidensho_cfg')||'{}'))}catch(e){}d.vib=1;return d})();
 const cfSave=()=>{try{localStorage.setItem('raidensho_cfg',JSON.stringify(CF))}catch(e){}};
 function cfApply(){sound=CF.se>0;if(OUTG)OUTG.gain.value=.7*CF.se/100;if(BGM.out)BGM.out.gain.value=CF.bgm/100;bgmUpdate()}
 function tick(){if(!CF.vib)return;try{HL.click()}catch(e){}}
@@ -1132,11 +1131,9 @@ function renderDex(){const ord=['x','ch','cnt','spr','pt'],ks=Object.keys(SKILLS
 $('help').onclick=()=>{ac();tick();renderDex();$('ovTitle').hidden=false};
 $('calm').onchange=()=>{RM=$('calm').checked};
 $('snd').onclick=()=>{ac();tick();cfShow();$('ovCfg').hidden=false};
-function cfShow(){$('cfBgm').value=CF.bgm;$('cfSe').value=CF.se;$('cfBgmV').textContent=CF.bgm;$('cfSeV').textContent=CF.se;$('cfVibOn').classList.toggle('on',!!CF.vib);$('cfVibOff').classList.toggle('on',!CF.vib);$('cfShkOn').classList.toggle('on',!!CF.shake);$('cfShkOff').classList.toggle('on',!CF.shake)}
+function cfShow(){$('cfBgm').value=CF.bgm;$('cfSe').value=CF.se;$('cfBgmV').textContent=CF.bgm;$('cfSeV').textContent=CF.se;$('cfShkOn').classList.toggle('on',!!CF.shake);$('cfShkOff').classList.toggle('on',!CF.shake)}
 $('cfBgm').addEventListener('input',e=>{CF.bgm=+e.target.value;cfShow();cfApply();cfSave()});
 let cfSeT=0;$('cfSe').addEventListener('input',e=>{CF.se=+e.target.value;cfShow();cfApply();cfSave();const n=performance.now();if(n-cfSeT>120){cfSeT=n;sTap(4,.6)}});
-$('cfVibOn').onclick=()=>{CF.vib=1;cfSave();cfShow();tick()};
-$('cfVibOff').onclick=()=>{CF.vib=0;cfSave();cfShow()};
 $('cfShkOn').onclick=()=>{tick();CF.shake=1;cfSave();cfShow();shk(8)};
 $('cfShkOff').onclick=()=>{tick();CF.shake=0;shake=0;cfSave();cfShow()};
 $('cfClose').onclick=()=>{tick();$('ovCfg').hidden=true};
