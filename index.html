@@ -246,7 +246,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
 .stat{font-variant-numeric:tabular-nums}
 .stat b{font-family:var(--display);font-weight:400;font-size:26px;color:var(--ink)}
 /* タイトル：右に縦書きの巨大な題字、左に小さな情報。背景では雷が落ち続ける */
-.title{position:absolute;inset:0;z-index:12;display:grid;grid-template-columns:1fr auto;gap:16px;padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,var(--void) 0,rgba(5,6,13,.25) 26%,rgba(5,6,13,.2) 70%,var(--void) 100%);cursor:pointer;-webkit-tap-highlight-color:transparent;--glow:0}
+.title{position:absolute;inset:0;z-index:12;display:grid;grid-template-columns:1fr auto;gap:16px;padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,var(--void) 0,rgba(5,6,13,.93) 24%,rgba(5,6,13,.72) 45%,rgba(5,6,13,.72) 62%,rgba(5,6,13,.93) 76%,var(--void) 100%);cursor:pointer;-webkit-tap-highlight-color:transparent;--glow:0}
 .tname{writing-mode:vertical-rl;margin:0;align-self:center;font-family:var(--display);font-weight:400;font-size:min(31vw,170px);line-height:1;letter-spacing:.04em;color:var(--act);text-shadow:0 0 calc(10px + var(--glow)*50px) rgba(200,220,255,calc(.35 + var(--glow)*.6)),0 0 2px #fff}
 .tside{display:grid;grid-template-rows:1fr auto;min-width:0}.tside>div:first-child{align-self:start}
 .tsub{font-family:var(--mono);font-size:11px;letter-spacing:.45em;color:var(--meter)}
