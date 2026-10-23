@@ -253,6 +253,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
 .ttag{margin:10px 0 0;font-size:15px;line-height:1.6;color:var(--ink)}
 .tbest{margin:6px 0 0;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
 .tcred{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0;text-align:center;font-size:11px;letter-spacing:.12em;color:var(--dim);opacity:.7;pointer-events:none}
+.cfbtns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:20em}.cfbtns .btn{min-height:52px}.cfbtns .btn small{display:block;font-size:11px;opacity:.7;margin-top:2px}
 .tres{display:flex;flex-direction:column;gap:10px;width:100%;max-width:15em;align-self:end;margin-bottom:var(--tb,0px)}
 .trec{min-height:40px;font-size:14px;opacity:.85}
 .tosm{min-height:40px;font-size:13px;color:var(--dim)}
@@ -420,10 +421,9 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
       <label class="crow"><span>BGM</span><input type="range" id="cfBgm" min="0" max="100" step="5"><b id="cfBgmV"></b></label>
       <label class="crow"><span>効果音</span><input type="range" id="cfSe" min="0" max="100" step="5"><b id="cfSeV"></b></label>
       <div class="crow"><span>画面の揺れ</span><div class="cseg"><button class="btn" id="cfShkOn">オン</button><button class="btn" id="cfShkOff">オフ</button></div></div>
-      <p class="sub">画面の揺れ：雷が落ちた時の揺れと強い光（オフにすると光も弱まる）</p>
+      <p class="sub">揺れをオフにすると、落雷の光も弱まる<br>設定はこの端末に残る</p>
     </div>
-    <p class="sub">設定はこの端末に残る</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn pri" id="cfClose" style="min-width:10em">閉じる</button><button class="btn" id="cfTitle">タイトルに戻る<small>続きから再開できる</small></button></div>
+    <div class="cfbtns"><button class="btn pri" id="cfClose">閉じる</button><button class="btn" id="cfTitle">タイトルに戻る<small>続きから再開できる</small></button></div>
   </div>
   <div class="ov pad" id="ovRec" hidden>
     <h2>記録</h2>
