@@ -652,7 +652,9 @@ function sTap(c,v){if(!AC||!sound)return;v=v==null?1:v;const r=(1+Math.min(c,40)
 const BGM={loading:false,buf:{},cur:null,want:null,vol:.32,out:null,pos:{}};
 const BGM_LOOP={barn:[85.730,193.394]};
 const BGM_RESUME={barn:1};
-const BGM_FILES={barn:'bgm/barn.mp3',sebolydi:'bgm/sebolydi.wav',tempo:'bgm/tempo.wav'};
+const BGM_FILES={barn:'bgm/barn.mp3',sebolydi:'bgm/sebolydi.wav',goo:'bgm/goo.wav',patag:'bgm/patag.wav'};
+/* 曲ごとの音量の補正（Gooは音が大きいので絞る） */
+const BGM_GAIN={goo:.6};
 /* スキル選び：New Barnの盛り上がり 2:20.686→2:29.657（4小節）、制覇：導入 0:29.653→0:38.625（4小節）をループ。どちらもふだんと同じファイルを使う */
 BGM_LOOP.pick=[140.686,149.657];BGM_LOOP.win=[29.653,38.625];
 const BGM_SRC={pick:'barn',win:'barn'};const bgmBuf=k=>BGM.buf[BGM_SRC[k]||k];
@@ -661,9 +663,9 @@ function bgmLoad(){BGM.loading=true;try{BGM.out=AC.createGain();BGM.out.gain.val
   for(const [k,u] of Object.entries(BGM_FILES))fetch(u).then(r=>r.arrayBuffer()).then(a=>new Promise((ok,ng)=>AC.decodeAudioData(a,ok,ng))).then(b=>{BGM.buf[k]=b;const w=BGM.want;if(w&&(BGM_SRC[w]||w)===k&&(!BGM.cur||BGM.cur.k!==w))bgmStart(w)}).catch(()=>{})}
 function bgmPos(c){const lp=BGM_LOOP[c.k];let p=AC.currentTime-c.t0+c.off;if(lp&&p>lp[1])p=lp[0]+(p-lp[0])%(lp[1]-lp[0]);else if(!lp)p=p%c.s.buffer.duration;return p}
 function bgmStop(fade){const c=BGM.cur;if(!c)return;BGM.cur=null;if(BGM_RESUME[c.k])BGM.pos[c.k]=bgmPos(c);const t=AC.currentTime;try{c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+fade);c.s.stop(t+fade+.05)}catch(e){}}
-function bgmStart(k){if(!AC||!BGM.out||!bgmBuf(k))return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=bgmBuf(k);s.loop=true;const lp=BGM_LOOP[k];if(lp){s.loopStart=lp[0];s.loopEnd=Math.min(lp[1],s.buffer.duration)}const off=BGM_RESUME[k]?(BGM.pos[k]||0):BGM_SRC[k]&&lp?lp[0]:0;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol,t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t,off);BGM.cur={k,s,g:gn,t0:t,off}}
+function bgmStart(k){if(!AC||!BGM.out||!bgmBuf(k))return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=bgmBuf(k);s.loop=true;const lp=BGM_LOOP[k];if(lp){s.loopStart=lp[0];s.loopEnd=Math.min(lp[1],s.buffer.duration)}const off=BGM_RESUME[k]?(BGM.pos[k]||0):BGM_SRC[k]&&lp?lp[0]:0;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol*(BGM_GAIN[k]||1),t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t,off);BGM.cur={k,s,g:gn,t0:t,off}}
 function bgmUpdate(){if(!AC)return;/* 停電（負け）が始まった瞬間に、その時流れている曲をフェードアウト（ボス戦でも同じ） */
-  const k=!(CF.bgm>0)?null:(mode==='title'||mode==='down'?null:mode==='pick'?'pick':mode==='end'?'tempo':bossNow()?'sebolydi':'barn');
+  const k=!(CF.bgm>0)?null:(mode==='title'||mode==='down'?null:mode==='pick'?'pick':mode==='end'?(endWin?'goo':'patag'):bossNow()?'sebolydi':'barn');
   if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(mode==='down'?1.5:.5);return}if(BGM.cur&&BGM.cur.k===k)return;if(bgmBuf(k))bgmStart(k)}
 document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
