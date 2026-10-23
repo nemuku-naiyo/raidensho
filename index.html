@@ -43,9 +43,9 @@
 }
 html,body{height:100%}
 body{background:var(--void);color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;word-break:keep-all;overflow-wrap:anywhere;line-break:strict}
-.app{position:relative;height:100%;display:flex;flex-direction:column}
+.app{position:fixed;top:0;bottom:0;left:8px;right:8px;display:flex;flex-direction:column}
 .pad{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-header{padding-block:10px 8px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);background:var(--panel)}
+header{padding-block:calc(10px + env(safe-area-inset-top,0px)) 8px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);background:var(--panel)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .ph{font-size:12px;color:var(--dim);letter-spacing:.04em;white-space:nowrap}
 .ph b{font-family:var(--display);font-weight:400;font-size:18px;color:var(--ink);letter-spacing:0;margin-left:4px}
@@ -182,7 +182,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
 .hist .hb{height:6px;border-radius:3px;background:rgba(140,150,255,.14);overflow:hidden;min-width:0}
 .hist .hb i{display:block;height:100%;background:var(--act)}
 .hist .ng+.hb i{background:var(--warn)}
-.ov{position:absolute;inset:0;z-index:10;background:rgba(5,6,13,.94);display:flex;flex-direction:column;justify-content:center;gap:16px;padding-block:24px;overflow-y:auto}
+.ov{position:absolute;inset:0;z-index:10;background:rgba(5,6,13,.94);display:flex;flex-direction:column;justify-content:center;gap:16px;padding-block:calc(24px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px));overflow-y:auto}
 .ov h1,.ov h2{margin:0;font-family:var(--display);font-weight:400;letter-spacing:.02em;text-wrap:balance}
 .ov h1{font-size:44px;color:var(--act);line-height:1}
 .ov h2{font-size:28px;color:var(--ink)}
