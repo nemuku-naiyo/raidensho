@@ -470,7 +470,7 @@ const SKILLS={
   keep:{n:'温存',d:'撃たずに「次へ」進むと、残っていた雷1発につき発電の倍率が+0.15。ずっと育つ',t:'mul',r:'n',grow:1},
   light:{n:'身軽',d:'空いているスキル枠1つにつき、発電×1.2（戦利品は数えない）',t:'mul',r:'n'},
   rterm:{n:'虹の終着',d:'いちばん長い線の終点が虹点なら、発電×3（2連鎖以上の時。太い線の先を見よう）',t:'mul',r:'r'},
-  irid:{n:'彩雷',d:'1発で当たった色の数で、発電×1.5（2色）・×2.5（3色）。虹点も1色に数える',t:'mul',r:'n'},
+  irid:{n:'彩雷',d:'1発で当たった色の数で、発電×1.5（2色）・×2.5（3色）・×4（3色＋虹点）。虹点も1色に数える',t:'mul',r:'n'},
   hoard:{n:'虹の蓄え',d:'落とした時に持っている虹点1個につき、発電×1.25（3個なら×1.95）',t:'mul',r:'n'},
   /* ---- 倍率（レア）：深くつなぐほど伸びる ---- */
   deep:{n:'連鎖増幅',d:'連鎖が1つ増えるたび、さらに+2連鎖',t:'mul',r:'r'},
@@ -652,7 +652,7 @@ function sTap(c,v){if(!AC||!sound)return;v=v==null?1:v;const r=(1+Math.min(c,40)
 const BGM={loading:false,buf:{},cur:null,want:null,vol:.32,out:null,pos:{}};
 const BGM_LOOP={barn:[85.730,193.394]};
 const BGM_RESUME={barn:1};
-const BGM_FILES={barn:'bgm/barn.mp3',sebolydi:'bgm/sebolydi.wav'};
+const BGM_FILES={barn:'bgm/barn.mp3',sebolydi:'bgm/sebolydi.wav',tempo:'bgm/tempo.wav'};
 /* スキル選び：New Barnの盛り上がり 2:20.686→2:29.657（4小節）、制覇：導入 0:29.653→0:38.625（4小節）をループ。どちらもふだんと同じファイルを使う */
 BGM_LOOP.pick=[140.686,149.657];BGM_LOOP.win=[29.653,38.625];
 const BGM_SRC={pick:'barn',win:'barn'};const bgmBuf=k=>BGM.buf[BGM_SRC[k]||k];
@@ -663,8 +663,8 @@ function bgmPos(c){const lp=BGM_LOOP[c.k];let p=AC.currentTime-c.t0+c.off;if(lp&
 function bgmStop(fade){const c=BGM.cur;if(!c)return;BGM.cur=null;if(BGM_RESUME[c.k])BGM.pos[c.k]=bgmPos(c);const t=AC.currentTime;try{c.g.gain.cancelScheduledValues(t);c.g.gain.setValueAtTime(c.g.gain.value,t);c.g.gain.linearRampToValueAtTime(0,t+fade);c.s.stop(t+fade+.05)}catch(e){}}
 function bgmStart(k){if(!AC||!BGM.out||!bgmBuf(k))return;bgmStop(.25);const s=AC.createBufferSource(),gn=AC.createGain(),t=AC.currentTime;s.buffer=bgmBuf(k);s.loop=true;const lp=BGM_LOOP[k];if(lp){s.loopStart=lp[0];s.loopEnd=Math.min(lp[1],s.buffer.duration)}const off=BGM_RESUME[k]?(BGM.pos[k]||0):BGM_SRC[k]&&lp?lp[0]:0;gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(BGM.vol,t+.15);s.connect(gn);gn.connect(BGM.out);s.start(t,off);BGM.cur={k,s,g:gn,t0:t,off}}
 function bgmUpdate(){if(!AC)return;/* 停電（負け）が始まった瞬間に、その時流れている曲をフェードアウト（ボス戦でも同じ） */
-  const k=!(CF.bgm>0)?null:(mode==='title'||mode==='down'?null:mode==='pick'?'pick':mode==='end'?(endWin?'win':null):bossNow()?'sebolydi':'barn');
-  if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(mode==='down'||mode==='end'?1.5:.5);return}if(BGM.cur&&BGM.cur.k===k)return;if(bgmBuf(k))bgmStart(k)}
+  const k=!(CF.bgm>0)?null:(mode==='title'||mode==='down'?null:mode==='pick'?'pick':mode==='end'?'tempo':bossNow()?'sebolydi':'barn');
+  if(k===BGM.want&&(!k||(BGM.cur&&BGM.cur.k===k)))return;BGM.want=k;if(!k){bgmStop(mode==='down'?1.5:.5);return}if(BGM.cur&&BGM.cur.k===k)return;if(bgmBuf(k))bgmStart(k)}
 document.addEventListener('visibilitychange',()=>{if(!AC)return;if(document.hidden)AC.suspend().catch(()=>{});else AC.resume().catch(()=>{})});
 function sBurn(){noise('lowpass',400,.7,.5,.01,.5,.5);thump(70,.5,.4)}
 /* 設定：BGM・効果音の音量（0〜100）と振動。この端末に保存 */
@@ -818,7 +818,7 @@ function scoreOf(hops,isLast){
     if(has('final')&&isLast)bon.push(['最終弾',4]);
     if(has('m_first')&&strikes===strikesMax)bon.push(['初撃',2.5]);
     if(tro('one')&&strikes===strikesMax)bon.push(['一撃の型',1.5]);
-    if(has('irid')){const cs=new Set(hops.map(h=>h.p.t)).size;if(cs>=3)bon.push(['彩雷',2.5]);else if(cs===2)bon.push(['彩雷',1.5])}
+    if(has('irid')){const cs=new Set(hops.map(h=>h.p.t)).size;if(cs>=4)bon.push(['彩雷',4]);else if(cs===3)bon.push(['彩雷',2.5]);else if(cs===2)bon.push(['彩雷',1.5])}
     if(has('keep')&&GS.keep)bon.push(['温存',1+.15*GS.keep]);
     if(has('light')&&CFG.slots>skills.size)bon.push(['身軽',Math.pow(1.2,CFG.slots-skills.size)]);
     if(has('rterm')&&maxD>=2&&hops.some(h=>h.d===maxD&&h.p.t==='w'))bon.push(['虹の終着',3]);
