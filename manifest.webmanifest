@@ -3,7 +3,7 @@
   "short_name": "雷電所",
   "start_url": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#04050b",
   "theme_color": "#04050b",
   "icons": [
