@@ -678,6 +678,9 @@ function sHop(d,nd){const f=noteHz(d);
 /* 決定：短い2音の「カチッ」 */
 function sDecide(){noise('highpass',5000,.7,.4,.0005,.015);tone(880,.16,.09,'triangle');setTimeout(()=>tone(1320,.14,.16,'triangle'),60)}
 /* 取らない・戻る：下がる2音 */
+/* ボタンを押した時の小さなクリック音（自分の音を持つボタンは除く） */
+function sUi(){if(!AC||!sound)return;noise('highpass',4200,.7,.16,.0005,.012);tone(1250,.07,.045,'triangle')}
+document.addEventListener('pointerdown',e=>{const b=e.target&&e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.matches('.chip,.card,#pickSkip,#pickOk,#fire,#nextb,#newBtn,#resumeBtn'))return;sUi()},true);
 function sSkip(){tone(520,.1,.07,'triangle');setTimeout(()=>tone(390,.1,.1,'triangle'),60)}
 /* 持ち越し：雷を溜めるように上がる音 */
 function sCharge(){if(!AC||!sound)return;const t=AC.currentTime,o=AC.createOscillator(),gg=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(900,t+.32);gg.gain.setValueAtTime(.0001,t);gg.gain.exponentialRampToValueAtTime(.2,t+.2);gg.gain.exponentialRampToValueAtTime(.0001,t+.42);o.connect(gg);gg.connect(MG);o.start(t);o.stop(t+.45);noise('bandpass',1200,2,.15,.2,.2,1.5)}
