@@ -324,6 +324,12 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
   .tname{font-size:calc((100dvh - 64px) / 3.25);height:3.15em}
   .cards{flex-direction:row}.cards>*{flex:1;min-width:0}
 }
+
+/* Android：画面の端は「戻る」のスワイプに取られるので、縦持ちでは左右を少し空ける */
+@media not all and (min-aspect-ratio: 3/2){
+  .android .app{left:24px;right:24px}
+  .android .stage{max-height:calc((100vw - 48px) * .846 + 72px)}
+}
 </style>
 
 <div class="app">
@@ -670,6 +676,7 @@ function sUi(){if(!AC||!sound)return;noise('highpass',4200,.7,.16,.0005,.012);to
 document.addEventListener('pointerdown',e=>{const b=e.target&&e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.matches('.chip,.card,#pickSkip,#pickOk,#fire,#nextb,#newBtn,#resumeBtn'))return;sUi()},true);
 /* Android の「戻る」（ボタン・端からのスワイプ）でゲームが閉じないように、遊んでいる間は履歴に1つ足しておく。
    戻るが来たら閉じずに設定を開く（設定やルールが開いていれば閉じる）。足し直しは次にタップした時（ブラウザの決まりで、操作なしの追加は飛ばされるため） */
+try{if(/Android/i.test(navigator.userAgent))document.documentElement.classList.add('android')}catch(e){}
 let backArm=false;
 function backGuard(){if(backArm||mode==='title')return;try{history.pushState({raidensho:1},'');backArm=true}catch(e){}}
 addEventListener('popstate',()=>{if(!backArm)return;backArm=false;if(mode==='title')return;
