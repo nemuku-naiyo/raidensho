@@ -668,6 +668,14 @@ function sDecide(){noise('highpass',5000,.7,.4,.0005,.015);tone(880,.16,.09,'tri
 /* ボタンを押した時の小さなクリック音（自分の音を持つボタンは除く） */
 function sUi(){if(!AC||!sound)return;noise('highpass',4200,.7,.16,.0005,.012);tone(1250,.07,.045,'triangle')}
 document.addEventListener('pointerdown',e=>{const b=e.target&&e.target.closest&&e.target.closest('button');if(!b||b.disabled||b.matches('.chip,.card,#pickSkip,#pickOk,#fire,#nextb,#newBtn,#resumeBtn'))return;sUi()},true);
+/* Android の「戻る」（ボタン・端からのスワイプ）でゲームが閉じないように、遊んでいる間は履歴に1つ足しておく。
+   戻るが来たら閉じずに設定を開く（設定やルールが開いていれば閉じる）。足し直しは次にタップした時（ブラウザの決まりで、操作なしの追加は飛ばされるため） */
+let backArm=false;
+function backGuard(){if(backArm||mode==='title')return;try{history.pushState({raidensho:1},'');backArm=true}catch(e){}}
+addEventListener('popstate',()=>{if(!backArm)return;backArm=false;if(mode==='title')return;
+  if(!$('ovCfg').hidden){$('ovCfg').hidden=true}else if(!$('ovTitle').hidden){$('ovTitle').hidden=true}else if($('ovPick').hidden&&$('ovEnd').hidden){cfShow();$('ovCfg').hidden=false}
+  backGuard()});
+document.addEventListener('pointerdown',()=>backGuard(),true);
 function sSkip(){tone(520,.1,.07,'triangle');setTimeout(()=>tone(390,.1,.1,'triangle'),60)}
 /* 持ち越し：雷を溜めるように上がる音 */
 function sCharge(){if(!AC||!sound)return;const t=AC.currentTime,o=AC.createOscillator(),gg=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(900,t+.32);gg.gain.setValueAtTime(.0001,t);gg.gain.exponentialRampToValueAtTime(.2,t+.2);gg.gain.exponentialRampToValueAtTime(.0001,t+.42);o.connect(gg);gg.connect(MG);o.start(t);o.stop(t+.45);noise('bandpass',1200,2,.15,.2,.2,1.5)}
@@ -1389,7 +1397,7 @@ function loadRun(d){tutLoad();TUT=false;tutSpot=null;
   else if(d.at==='pick'){pickLeft=d.pickLeft||1;pick(0,d.pool)}
   else setTimeout(()=>banner(`${resumeLabel(d)}<small>続きから</small>`,'soft',1200),150)}
 function resumeLabel(d){if(d.at==='won')return '3ステージ制覇・エンドレスへ進める';return `ステージ ${Math.floor(d.phase/3)+1}-${d.phase%3===2?'ボス':d.phase%3+1}${d.endless?' ∞':''}`}
-function startFromTitle(resume){if(tGone)return;tGone=true;ac();
+function startFromTitle(resume){if(tGone)return;tGone=true;ac();if(!backArm){try{history.pushState({raidensho:1},'');backArm=true}catch(e){}}
   const r=ttl.querySelector('.tname').getBoundingClientRect(),c=cv.getBoundingClientRect(),cx=Math.max(20,Math.min(W-20,(r.left+r.width/2-c.left)/SC)),cy=Math.max(20,Math.min(H-20,(r.top+r.height/2-c.top)/SC));
   for(let i=0;i<5;i++)addBolt(cx+(Math.random()-.5)*160,-10,cx+(Math.random()-.5)*40,cy+(Math.random()-.5)*120,22,3+Math.random()*3,50);
   impactNow(cx,cy,50,1.5);stop(5);fl(.45,50);shk(16);camKick(cx,cy,14);burst(cx,cy,220,12,50);ring(cx,cy,8,50,9);ring(cx,cy,4,205,5);
