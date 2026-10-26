@@ -28,7 +28,7 @@
 
 ## 更新の流れ
 
-1. `src/raidensho.html` を直す
+1. `src/raidensho.html` を直す（タイトル画面右下の `ver.NNN` を1つ上げる。claude.aiの作品の版番号と同じ数字）
 2. `python3 tools/build.py` で `index.html` を作り直す
 3. `sh tools/mkchk.sh` で構文チェック、`cd tools && node play.js` で回帰テスト（最後に「予想と実際は一致」が出ればOK）
 
