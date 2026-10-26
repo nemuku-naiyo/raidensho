@@ -70,7 +70,7 @@ rt{font-family:var(--body);font-weight:800;font-size:.22em;letter-spacing:.28em;
 .tname{position:relative}
 .tname::after{content:'ライデンショ';position:absolute;white-space:nowrap;top:1em;left:-1.9em;writing-mode:vertical-rl;font-family:var(--body);font-weight:800;font-size:.11em;letter-spacing:.7em;color:var(--dim);text-shadow:none}
 .banner.out rt{color:var(--warn);opacity:.9}
-.banner{position:absolute;left:0;right:0;top:38%;text-align:center;pointer-events:none;font-family:var(--display);font-size:min(14vw,60px);line-height:1;color:#fff;letter-spacing:0;text-shadow:0 0 18px rgba(147,168,255,.8);padding-inline:16px}
+.banner{position:absolute;z-index:20;left:0;right:0;top:38%;text-align:center;pointer-events:none;font-family:var(--display);font-size:min(14vw,60px);line-height:1;color:#fff;letter-spacing:0;text-shadow:0 0 18px rgba(147,168,255,.8);padding-inline:16px}
 .banner small{display:block;font-family:var(--body);font-weight:700;font-size:14px;letter-spacing:.2em;color:var(--act);margin-top:8px;text-shadow:none}
 .banner.lv2,.banner.lv3{color:var(--act);text-shadow:0 0 24px rgba(200,220,255,.9)}
 .banner.lv3{font-size:min(17vw,76px)}
@@ -80,7 +80,7 @@ rt{font-family:var(--body);font-weight:800;font-size:.22em;letter-spacing:.28em;
 .clr .rank.r1{color:var(--act)}
 .clr .rank.r2{color:var(--gold);font-size:20px}
 .clr .rank.r3{color:var(--gold);font-size:28px;text-shadow:0 0 16px rgba(255,200,80,.7)}
-.banner.soft{font-size:28px;color:var(--act);text-shadow:none}
+.banner.soft{font-size:28px;color:var(--act);text-shadow:none;background:rgba(5,6,13,.94);padding-block:16px;border-block:1px solid var(--line)}
 footer{padding-block:8px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:8px}
 .legend .lg{margin:0 0 4px;display:block;font-size:13px;line-height:1.6}
 .aimctl #nextb{flex:none;line-height:1.15;padding-inline:12px;border-color:var(--act);color:var(--act)}
@@ -379,7 +379,7 @@ button.chip.on{background:rgba(200,220,255,.15);border-color:var(--act)}
       <div class="tres" id="tres"><button class="btn pri" id="resumeBtn" hidden>続きから</button><button class="btn" id="newBtn">はじめから</button><button class="btn trec" id="recBtn">記録</button></div>
     </div>
     <h1 class="tname">雷電所</h1>
-    <p class="tcred">YMD（うーちーのあそびば）<span class="tver">ver.144</span></p>
+    <p class="tcred">YMD（うーちーのあそびば）<span class="tver">ver.145</span></p>
   </div>
 
   <div class="ov pad" id="ovTitle" hidden>
